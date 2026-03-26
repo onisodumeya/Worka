@@ -117,7 +117,7 @@ export default function EmployerOnboardingClient() {
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       <Toaster position="top-center" richColors />
 
       {/* Header */}
@@ -130,7 +130,7 @@ export default function EmployerOnboardingClient() {
             variant="ghost"
             click={handleSkip}
             loading={skipping || saving}
-            className="w-full"
+            className="w-fit"
           >
             {skipping ? "Skipping..." : "Skip for now"}
           </Button>
@@ -138,7 +138,7 @@ export default function EmployerOnboardingClient() {
       </div>
 
       {/* Progress steps */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
+      <div className="bg-white border-b border-gray-100 px-6 py-4 b hidden md:block">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between">
             {STEPS.map((s, i) => {
@@ -146,7 +146,7 @@ export default function EmployerOnboardingClient() {
               const isComplete = step > s.id;
               const isCurrent = step === s.id;
               return (
-                <div key={s.id} className="flex items-center">
+                <div key={s.id} className="flex items-center justify-between">
                   <div className="flex flex-col items-center gap-1">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
@@ -169,7 +169,7 @@ export default function EmployerOnboardingClient() {
                   </div>
                   {i < STEPS.length - 1 && (
                     <div
-                      className={`h-px w-16 sm:w-32 mx-1 mb-4 transition-all ${
+                      className={`h-px w-16 sm:w-40 mx-1 mb-4 transition-all ${
                         step > s.id ? "bg-gray-900" : "bg-gray-200"
                       }`}
                     />
@@ -430,7 +430,7 @@ export default function EmployerOnboardingClient() {
 
             {step < STEPS.length ? (
               <Button click={() => setStep((s) => s + 1)} loading={saving}>
-                <ChevronRight size={16} /> Back
+                Next <ChevronRight size={16} />
               </Button>
             ) : (
               <Button click={handleFinish} loading={saving}>
