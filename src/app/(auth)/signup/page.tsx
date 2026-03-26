@@ -18,6 +18,7 @@ export default function SignupPage({
   const [role, setRole] = useState<"freelancer" | "employer">("freelancer");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [terms, setTerms] = useState(false);
 
   const strengthInfo = getPasswordStrength(password);
 
@@ -239,7 +240,43 @@ export default function SignupPage({
           </div>
         )}
 
-        <Button type="submit" loading={loading} className="w-full">
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={terms}
+            onChange={(e) => setTerms(e.target.checked)}
+            className="mt-0.5 rounded border-gray-300 cursor-pointer"
+          />
+          <label
+            htmlFor="terms"
+            className="text-sm text-gray-500 leading-relaxed"
+          >
+            I agree to the{" "}
+            <a
+              href="/terms"
+              target="_blank"
+              className="text-gray-900 font-medium hover:underline"
+            >
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a
+              href="/privacy"
+              target="_blank"
+              className="text-gray-900 font-medium hover:underline"
+            >
+              Privacy Policy
+            </a>
+          </label>
+        </div>
+
+        <Button
+          type="submit"
+          loading={loading}
+          className="w-full"
+          disabled={!terms}
+        >
           {loading ? "Creating account..." : "Create account"}
         </Button>
       </form>
@@ -250,10 +287,11 @@ export default function SignupPage({
         <div className="h-px bg-gray-200 w-full"></div>
       </div>
 
-      <button
-        onClick={handleGoogleSignIn}
-        type="button"
-        className="w-full py-2.5 mt-3 border border-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+      <Button
+        click={handleGoogleSignIn}
+        className="w-full"
+        variant="outline"
+        disabled={!terms}
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24">
           <path
@@ -274,7 +312,7 @@ export default function SignupPage({
           />
         </svg>
         Continue with Google
-      </button>
+      </Button>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{" "}

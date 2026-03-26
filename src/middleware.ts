@@ -28,56 +28,111 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   const pathname = request.nextUrl.pathname;
+
+  // Pages always accessible to authenticated users regardless of state
+  const alwaysAllowed = ["/confirm-email", "/auth/error", "/auth/callback"];
+  if (alwaysAllowed.some((p) => pathname.startsWith(p))) {
+    return supabaseResponse;
+  }
 
   // Auth pages — redirect logged-in users away
   const authPages = ["/login", "/signup"];
-  if (user) {
-    const alwaysAllowed = ["/select-role", "/confirm-email", "/auth/error"];
+  if (user && authPages.includes(pathname)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, onboarding_complete, employer_onboarding_complete")
+      .eq("id", user.id)
+      .single();
 
-    if (alwaysAllowed.some((p) => pathname.startsWith(p))) {
-      return supabaseResponse;
+    if (!profile?.role) {
+      return NextResponse.redirect(new URL("/select-role", request.url));
     }
 
+    if (profile.role === "employer") {
+      return NextResponse.redirect(
+        new URL(
+          profile.employer_onboarding_complete
+            ? "/dashboard"
+            : "/employer-onboarding",
+          request.url,
+        ),
+      );
+    }
+
+    return NextResponse.redirect(
+      new URL(
+        profile?.onboarding_complete ? "/jobs" : "/onboarding",
+        request.url,
+      ),
+    );
+  }
+
+  // Select-role — unauthenticated users go to login
+  if (!user && pathname === "/select-role") {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Select-role — users with a role get redirected away
+  if (user && pathname === "/select-role") {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, onboarding_complete, employer_onboarding_complete")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role === "employer") {
+      return NextResponse.redirect(
+        new URL(
+          profile.employer_onboarding_complete
+            ? "/dashboard"
+            : "/employer-onboarding",
+          request.url,
+        ),
+      );
+    }
+
+    if (profile?.role === "freelancer") {
+      return NextResponse.redirect(
+        new URL(
+          profile.onboarding_complete ? "/jobs" : "/onboarding",
+          request.url,
+        ),
+      );
+    }
+
+    // No role yet — allow through
+    return supabaseResponse;
+  }
+
+  // Protected routes — redirect logged-out users to login
+  const protectedPaths = [
+    "/dashboard",
+    "/onboarding",
+    "/employer-onboarding",
+    "/confirm-email",
+  ];
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+  if (!user && isProtected) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Role-based route protection
+  if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    // Only enforce role
-    if (!profile?.role) {
-      return NextResponse.redirect(new URL("/select-role", request.url));
-    }
-
-    // Role-based routing only
-    if (profile.role === "freelancer" && pathname.startsWith("/dashboard")) {
+    // Freelancers can't access employer dashboard
+    if (profile?.role === "freelancer" && pathname.startsWith("/dashboard")) {
       return NextResponse.redirect(new URL("/jobs", request.url));
     }
 
-    if (profile.role === "employer" && pathname.startsWith("/jobs")) {
+    // Employers can't access freelancer jobs page
+    if (profile?.role === "employer" && pathname.startsWith("/jobs")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
-  }
-
-  // Protected routes — redirect logged-out users to login
-  const protectedPaths = ["/dashboard", "/confirm-email"];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
-  if (!user && isProtected) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Employer dashboard — redirect incomplete onboarding
-  if (user && pathname.startsWith("/dashboard")) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, employer_onboarding_complete")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role === "freelancer") {
-      return NextResponse.redirect(new URL("/jobs", request.url));
     }
   }
 
