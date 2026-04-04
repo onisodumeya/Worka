@@ -38,8 +38,13 @@ export default function JobForm({
   const router = useRouter();
   const isEditing = !!job;
 
+  function toArray(value: string | string[] | undefined): string[] {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  }
+
   const [requirements, setRequirements] = useState<string[]>(
-    job?.requirements ?? [""],
+    toArray(job?.requirements),
   );
 
   function addRequirement() {
@@ -62,7 +67,7 @@ export default function JobForm({
     category: job?.category ?? "",
     salary_range: job?.salary_range ?? "",
     description: job?.description ?? "",
-    requirements: job?.requirements ?? [],
+    requirements: toArray(job?.requirements),
   });
   const [loading, setLoading] = useState(false);
 
