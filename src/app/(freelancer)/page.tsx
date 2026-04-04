@@ -550,14 +550,22 @@ export default function JobsPage() {
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">
                     Requirements
                   </h3>
-                  {selectedJob.requirements.map((requirement, index) => (
-                    <p
-                      key={index}
-                      className="text-sm text-gray-600 leading-relaxed whitespace-pre-line"
-                    >
-                      - {requirement}
+                  {Array.isArray(selectedJob.requirements) ? (
+                    <ul className="space-y-2 list-disc">
+                      {selectedJob.requirements.map((requirement, index) => (
+                        <li
+                          key={index}
+                          className="text-sm text-gray-600 leading-relaxed whitespace-pre-line"
+                        >
+                          {requirement}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                      {selectedJob.requirements}
                     </p>
-                  ))}
+                  )}
                 </div>
               </div>
 
