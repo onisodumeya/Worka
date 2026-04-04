@@ -7,11 +7,15 @@ export type ApplicationStatus =
   | "shortlisted"
   | "rejected";
 
+export interface LookupItem {
+  value: string;
+  label: string;
+}
 export interface Profile {
-  id: string;
-  full_name: string;
-  email: string;
-  role: Role;
+  id?: string;
+  full_name?: string;
+  email?: string;
+  role?: Role;
   avatar_url?: string;
   logo_url?: string;
   website_url?: string;
@@ -28,7 +32,7 @@ export interface Profile {
   portfolio_links?: string[];
   onboarding_complete?: boolean;
   employer_onboarding_complete?: boolean;
-  created_at: string;
+  created_at?: string;
 }
 
 export interface Experience {
@@ -71,6 +75,8 @@ export interface Job {
   company: string;
   location: string;
   job_type: JobType;
+  work_mode: string;
+  category?: string;
   salary_range?: string;
   description: string;
   requirements: string;

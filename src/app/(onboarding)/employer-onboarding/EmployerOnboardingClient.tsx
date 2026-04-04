@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Toaster, toast } from "sonner";
+import { Profile } from "@/types";
 import {
   Building2,
   MapPin,
@@ -35,6 +36,26 @@ export default function EmployerOnboardingClient() {
 
   // Step 2 — Details
   const [location, setLocation] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("profiles")
+        .select("industry, company_size")
+        .eq("id", user.id)
+        .single();
+      setProfile(data);
+    }
+    fetchProfile();
+  }, []);
 
   // Step 3 — Socials
   const [linkedin, setLinkedin] = useState("");
@@ -85,6 +106,8 @@ export default function EmployerOnboardingClient() {
           location: location || undefined,
           linkedin_url: linkedin || undefined,
           twitter_url: twitter || undefined,
+          industry: industry || undefined,
+          company_size: companySize || undefined,
           employer_onboarding_complete: true,
         })
         .eq("id", user.id);
@@ -275,28 +298,71 @@ export default function EmployerOnboardingClient() {
                 />
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  The following details were collected at signup and can be
-                  updated later in your company settings.
-                </p>
-                <div className="mt-3 space-y-2">
-                  {[
-                    { label: "Industry", field: "industry" },
-                    { label: "Company size", field: "company_size" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex justify-between text-sm"
-                    >
-                      <span className="text-gray-500">{item.label}</span>
+              {/* Show fields if missing, info message if already filled */}
+              {!profile?.industry || !profile?.company_size ? (
+                <div className="space-y-4">
+                  {!profile?.industry && (
+                    <div>
+                      <label className={labelClass}>Industry</label>
+                      <select
+                        value={industry}
+                        onChange={(e) => setIndustry(e.target.value)}
+                        className={inputClass}
+                      >
+                        <option value="">Select industry</option>
+                        <option value="fintech">Fintech</option>
+                        <option value="ecommerce">E-commerce</option>
+                        <option value="healthtech">Healthtech</option>
+                        <option value="edtech">Edtech</option>
+                        <option value="logistics">Logistics</option>
+                        <option value="media">Media & Entertainment</option>
+                        <option value="consulting">Consulting</option>
+                        <option value="government">Government</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {!profile?.company_size && (
+                    <div>
+                      <label className={labelClass}>Company size</label>
+                      <select
+                        value={companySize}
+                        onChange={(e) => setCompanySize(e.target.value)}
+                        className={inputClass}
+                      >
+                        <option value="">Select size</option>
+                        <option value="1-10">1–10 employees</option>
+                        <option value="11-50">11–50 employees</option>
+                        <option value="51-200">51–200 employees</option>
+                        <option value="201-500">201–500 employees</option>
+                        <option value="500+">500+ employees</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    The following details were collected at signup and can be
+                    updated later in your company settings.
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Industry</span>
                       <span className="text-gray-700 font-medium capitalize">
-                        —
+                        {profile.industry}
                       </span>
                     </div>
-                  ))}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Company size</span>
+                      <span className="text-gray-700 font-medium">
+                        {profile.company_size}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

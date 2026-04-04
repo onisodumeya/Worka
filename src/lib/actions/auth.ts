@@ -58,12 +58,12 @@ export async function signIn(formData: FormData) {
   revalidatePath("/", "layout");
 
   if (profile?.role === "employer") redirect("/dashboard");
-  else redirect("/jobs");
+  else redirect("/");
 }
 
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/", "layout");
-  redirect("/login");
+  redirect("/");
 }

@@ -243,7 +243,7 @@ export default function OnboardingPage() {
       }
 
       toast.success("Profile complete!", { id: "saving" });
-      router.push("/jobs");
+      router.push("/");
     } catch {
       toast.error("Something went wrong. Please try again.", { id: "saving" });
       setSaving(false);
@@ -262,7 +262,7 @@ export default function OnboardingPage() {
         .update({ onboarding_complete: true })
         .eq("id", user.id);
     }
-    router.push("/jobs");
+    router.push("/");
   }
 
   const inputClass =

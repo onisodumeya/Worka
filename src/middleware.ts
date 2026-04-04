@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Pages always accessible to authenticated users regardless of state
-  const alwaysAllowed = ["/confirm-email", "/auth/error", "/auth/callback"];
+  const alwaysAllowed = ["/auth/error", "/auth/callback"];
   if (alwaysAllowed.some((p) => pathname.startsWith(p))) {
     return supabaseResponse;
   }
@@ -61,10 +61,7 @@ export async function middleware(request: NextRequest) {
     }
 
     return NextResponse.redirect(
-      new URL(
-        profile?.onboarding_complete ? "/jobs" : "/onboarding",
-        request.url,
-      ),
+      new URL(profile?.onboarding_complete ? "/" : "/onboarding", request.url),
     );
   }
 
@@ -94,10 +91,7 @@ export async function middleware(request: NextRequest) {
 
     if (profile?.role === "freelancer") {
       return NextResponse.redirect(
-        new URL(
-          profile.onboarding_complete ? "/jobs" : "/onboarding",
-          request.url,
-        ),
+        new URL(profile.onboarding_complete ? "/" : "/onboarding", request.url),
       );
     }
 
@@ -127,11 +121,11 @@ export async function middleware(request: NextRequest) {
 
     // Freelancers can't access employer dashboard
     if (profile?.role === "freelancer" && pathname.startsWith("/dashboard")) {
-      return NextResponse.redirect(new URL("/jobs", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
 
     // Employers can't access freelancer jobs page
-    if (profile?.role === "employer" && pathname.startsWith("/jobs")) {
+    if (profile?.role === "employer" && pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
